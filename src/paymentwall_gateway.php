@@ -3,7 +3,7 @@
 Plugin Name: Jigoshop Paymentwall Gateway
 Plugin URI: https://www.paymentwall.com/en/documentation/Jigoshop-WordPress/1168
 Description: This plugin extends the Jigoshop payment gateways by adding a Paymentwall payment solution.
-Version: 1.1.0
+Version: 1.1.1
 Author: Paymentwall
 Author URI: http://www.paymentwall.com/
 */
@@ -164,10 +164,11 @@ function paymentwall_jigoshop_gateway() {
 				}
 
 				echo '<p>'.__($this->thankyoutext, 'jigoshop').'</p>';
+
 				$widget = new Paymentwall_Widget(
-					$order->user_id,		// id of the end-user who's making the payment
-					$this->widget,			// widget code, e.g. p1; can be picked inside of your merchant account
-					array(					// product details for Flexible Widget Call. To let users select the product on Paymentwall's end, leave this array empty
+					($order->user_id == 0) ? $_SERVER['REMOTE_ADDR'] : $order->user_id,	// id of the end-user who's making the payment
+					$this->widget,											// widget code, e.g. p1; can be picked inside of your merchant account
+					array(													// product details for Flexible Widget Call. To let users select the product on Paymentwall's end, leave this array empty
 						new Paymentwall_Product(
 							$order->id,								// id of the product in your system
 							$order->order_subtotal,					// price
