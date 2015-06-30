@@ -1,13 +1,4 @@
 <?php
-/*
-Plugin Name: Jigoshop Paymentwall Gateway
-Plugin URI: https://www.paymentwall.com/en/documentation/Jigoshop-WordPress/1168
-Description: This plugin extends the Jigoshop payment gateways by adding a Paymentwall payment solution.
-Version: 1.1.1
-Author: Paymentwall
-Author URI: http://www.paymentwall.com/
-*/
-
 add_action( 'plugins_loaded', 'paymentwall_jigoshop_gateway', 159 );
 function paymentwall_jigoshop_gateway() {
 
@@ -24,9 +15,11 @@ function paymentwall_jigoshop_gateway() {
 
 			public function paymentwall_init () {
 				require_once('api/lib/paymentwall.php');
-				Paymentwall_Base::setApiType(Paymentwall_Base::API_GOODS);
-				Paymentwall_Base::setAppKey($this->appkey); // available in your Paymentwall merchant area
-				Paymentwall_Base::setSecretKey($this->secretkey); // available in your Paymentwall merchant area
+                Paymentwall_Config::getInstance()->set(array(
+                    'api_type' => Paymentwall_Config::API_GOODS,
+                    'public_key' => $this->appkey, // available in your Paymentwall merchant area
+                    'private_key' => $this->secretkey // available in your Paymentwall merchant area
+                ));
 			}
 		
 			public function __construct() {
@@ -179,6 +172,7 @@ function paymentwall_jigoshop_gateway() {
 					),
 					array(
 							'email' => $order->billing_email,
+                            'integration_module' => 'jigoshop',
 							'success_url' => $this->successurl,
 							'test_mode' => (int)$this->testmode
 						)			// additional parameters
@@ -204,10 +198,11 @@ function paymentwall_jigoshop_gateway() {
 					echo wpautop(wptexturize($this->description));
 				}
 			}
-			
+
 			function check_ipn_response() {
-				if ($_SERVER['HTTP_USER_AGENT'] == 'Paymentwall API') {
-					$this->paymentwall_init();
+                if (isset($_GET['paymentwallListener']) && $_GET['paymentwallListener'] == 'paymentwall_IPN') {
+                    $this->paymentwall_init();
+                    unset($_GET['paymentwallListener']);
 
 					$pingback = new Paymentwall_Pingback($_GET, $_SERVER['REMOTE_ADDR']);
 					
